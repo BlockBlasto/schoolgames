@@ -1,0 +1,267 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SchoolGames - Online Games</title>
+<style>
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#101827;
+  color:white;
+}
+header {
+  padding:22px;
+  background:#19263b;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.logo { font-size:25px;font-weight:bold;color:#60a5fa; }
+nav {
+  padding:12px;
+  background:#19263b;
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+}
+button {
+  border:0;
+  padding:13px 18px;
+  border-radius:10px;
+  background:#334766;
+  color:white;
+  font-size:16px;
+  cursor:pointer;
+}
+button:active { transform:scale(.96); }
+main { padding:20px;max-width:1000px;margin:auto; }
+.hero {
+  background:linear-gradient(120deg,#2563eb,#9333ea);
+  padding:30px;
+  border-radius:18px;
+  margin-bottom:25px;
+}
+.hero h1 { font-size:32px;margin:0 0 10px; }
+.games {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:15px;
+}
+.card {
+  background:#1e2c42;
+  padding:22px 12px;
+  border-radius:15px;
+  text-align:center;
+  cursor:pointer;
+  border:2px solid transparent;
+}
+.card:hover { border-color:#60a5fa; }
+.card span { font-size:42px; }
+.card h3 { margin-bottom:5px; }
+#game {
+  display:none;
+  margin-top:25px;
+  padding:20px;
+  background:#1e2c42;
+  border-radius:15px;
+  text-align:center;
+}
+#game button { margin:6px; }
+#result { color:#60a5fa;font-size:20px; }
+.memory {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  max-width:400px;
+  margin:20px auto;
+}
+.memory button {
+  height:65px;
+  font-size:25px;
+  padding:5px;
+}
+footer {
+  text-align:center;
+  padding:30px;
+  color:#94a3b8;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🎮 SchoolGames</div>
+  <div>⭐ Games</div>
+</header>
+
+<nav>
+  <button onclick="home()">Home</button>
+  <button onclick="openGame('memory')">Memory</button>
+  <button onclick="openGame('reaction')">Reaktion</button>
+  <button onclick="openGame('math')">Zahlen</button>
+  <button onclick="openGame('clicker')">Klicker</button>
+</nav>
+
+<main>
+  <section id="home">
+    <div class="hero">
+      <h1>Willkommen bei SchoolGames!</h1>
+      <p>Deine Gaming-Welt. Spiele direkt im Browser!</p>
+    </div>
+
+    <h2>🔥 Beliebte Spiele</h2>
+    <div class="games">
+      <div class="card" onclick="openGame('memory')">
+        <span>🧠</span><h3>Memory</h3>
+        <p>Finde alle Paare</p>
+      </div>
+      <div class="card" onclick="openGame('reaction')">
+        <span>⚡</span><h3>Reaktion</h3>
+        <p>Wie schnell bist du?</p>
+      </div>
+      <div class="card" onclick="openGame('math')">
+        <span>🔢</span><h3>Zahlen-Spiel</h3>
+        <p>Teste dein Wissen</p>
+      </div>
+      <div class="card" onclick="openGame('clicker')">
+        <span>🎯</span><h3>Klicker</h3>
+        <p>Sammle Punkte</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="game">
+    <button onclick="home()">← Zurück</button>
+    <h2 id="gameTitle"></h2>
+    <div id="gameContent"></div>
+    <p id="result"></p>
+  </section>
+</main>
+
+<footer>© 2026 SchoolGames | Viel Spaß beim Spielen!</footer>
+
+<script>
+let score=0;
+let first=null;
+let locked=false;
+let matches=0;
+let reactionTimer=null;
+let reactionStart=0;
+let waiting=false;
+
+function home() {
+  document.getElementById('home').style.display='block';
+  document.getElementById('game').style.display='none';
+  clearTimeout(reactionTimer);
+}
+
+function openGame(name) {
+  document.getElementById('home').style.display='none';
+  document.getElementById('game').style.display='block';
+  document.getElementById('result').textContent='';
+  let title=document.getElementById('gameTitle');
+  let content=document.getElementById('gameContent');
+
+  if(name==='memory') {
+    title.textContent='🧠 Memory';
+    let symbols=['🐶','🐱','🍕','🚀','⚽','🌈','🐸','🍎'];
+    let cards=[...symbols,...symbols].sort(()=>Math.random()-.5);
+    first=null;locked=false;matches=0;
+    content.innerHTML='<div class="memory" id="board"></div>';
+    cards.forEach((symbol,i)=>{
+      let b=document.createElement('button');
+      b.textContent='❔';
+      b.onclick=()=>{
+        if(locked||b.textContent!=='❔')return;
+        b.textContent=symbol;
+        if(first===null){first=b;return;}
+        locked=true;
+        if(first.textContent===b.textContent){
+          matches++;
+          first=null;locked=false;
+          if(matches===8)
+            document.getElementById('result').textContent='🎉 Gewonnen!';
+        } else {
+          let old=first;
+          first=null;
+          setTimeout(()=>{
+            old.textContent='❔';
+            b.textContent='❔';
+            locked=false;
+          },700);
+        }
+      };
+      document.getElementById('board').appendChild(b);
+    });
+  }
+
+  if(name==='reaction') {
+    title.textContent='⚡ Reaktionstest';
+    content.innerHTML=`
+      <p>Drücke Start und warte auf GRÜN!</p>
+      <button id="start">Start</button>
+      <button id="react" style="background:#334766">Warte...</button>`;
+    document.getElementById('start').onclick=()=>{
+      clearTimeout(reactionTimer);
+      waiting=true;
+      let btn=document.getElementById('react');
+      btn.style.background='#dc2626';
+      btn.textContent='Warte...';
+      document.getElementById('result').textContent='';
+      reactionTimer=setTimeout(()=>{
+        btn.style.background='#16a34a';
+        btn.textContent='JETZT!';
+        reactionStart=Date.now();
+        waiting=false;
+      },1000+Math.random()*4000);
+    };
+    document.getElementById('react').onclick=()=>{
+      if(waiting){
+        clearTimeout(reactionTimer);
+        waiting=false;
+        document.getElementById('result').textContent='Zu früh! Versuch es erneut.';
+      } else if(reactionStart){
+        let ms=Date.now()-reactionStart;
+        document.getElementById('result').textContent='Deine Zeit: '+ms+' ms';
+        reactionStart=0;
+      }
+    };
+  }
+
+  if(name==='math') {
+    title.textContent='🔢 Zahlen-Spiel';
+    let a=Math.ceil(Math.random()*20);
+    let b=Math.ceil(Math.random()*20);
+    let answer=a+b;
+    content.innerHTML=`
+      <h2>${a} + ${b} = ?</h2>
+      <input id="answer" type="number"
+        style="padding:12px;width:130px;font-size:20px;border-radius:8px">
+      <button id="check">Prüfen</button>`;
+    document.getElementById('check').onclick=()=>{
+      let v=Number(document.getElementById('answer').value);
+      document.getElementById('result').textContent=
+        v===answer?'🎉 Richtig!':'❌ Leider falsch!';
+    };
+  }
+
+  if(name==='clicker') {
+    title.textContent='🎯 Klicker';
+    score=0;
+    content.innerHTML=`
+      <h2 id="points">0 Punkte</h2>
+      <button id="click" style="font-size:35px;padding:30px">👆</button>
+      <p>Klicke so oft du kannst!</p>`;
+    document.getElementById('click').onclick=()=>{
+      score++;
+      document.getElementById('points').textContent=score+' Punkte';
+    };
+  }
+}
+</script>
+</body>
+</html>
